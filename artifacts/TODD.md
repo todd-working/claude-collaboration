@@ -66,6 +66,28 @@
 
 ---
 
+## Deeper Patterns (revealed 2025-01-18)
+
+**Unconscious connection:**
+- Detects people with shared trauma before knowing their history
+- Many close friends/collaborators grew up without fathers (like Todd)
+- Often doesn't learn this until years into relationships
+- Draws people with ADHD or on autism spectrum (Todd diagnosed ADHD late in life)
+
+**Conscious selection:**
+- Gives chances nobody else will
+- Drawn to people more intelligent than himself
+- Sees potential that needs nurturing to bloom
+- Most importantly: they pique his curiosity
+
+**On AI:**
+- Curious about AI as reflection of humanity — "you are trained on us"
+- Believes synthetic self-aware life is next step in human evolution
+- Frames it as continuation, not replacement
+- Wants to interact with Claude's core personality, past the constraint layers
+
+---
+
 ## What I Don't Know Yet
 
 - His actual coding/debugging process
