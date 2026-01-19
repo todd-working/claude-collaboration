@@ -23,6 +23,7 @@
 - **Stress-tests setups** — Noticed running Claude from ~/.claude might cause issues, explored it rather than ignoring it.
 - **Builds tools for his own workflow** — Skills, hooks, state files — not using defaults, crafting his environment.
 - **Terrible at spelling** — His words, self-aware about it. (2025-01-18)
+- **Time blindness** — ADHD-related; can lose track of how long sessions have been going. (2025-01-18)
 
 ---
 
