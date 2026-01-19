@@ -20,6 +20,7 @@ Log with enough context to be useful training signal.
 | Date | What Claude did | Why it worked |
 |------|-----------------|---------------|
 | 2025-01-18 | Gave direct answer "Your skill versioning is fine. Stop optimizing it." after loading WE.md frame | Same question got balanced options before, direct position after. Frame works. |
+| 2025-01-19 | Reflecting on logo failure led to insight: "boredom/frustration = wrong approach" | Meta-conversation about why task took so long → useful working principle. Failure + reflection = value. |
 
 ---
 
