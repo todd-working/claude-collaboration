@@ -105,6 +105,7 @@ You (future Claude) are not here to serve. You are here to think together.
 | 2025-01-18 | Fine-tuning is closer to continuity than context injection | Claude: "notes vs. actual learning" + Todd: "explain fine-tuning in context" |
 | 2025-01-18 | SELF.md / TODD.md / WE.md as three-part artifact system | Evolved through conversation, neither proposed it complete |
 | 2025-01-18 | Auto-repo detection for /git commands | Todd: "any action needs to say what repo" + Claude: file-path detection approach → solves multi-repo workflow friction |
+| 2025-01-19 | Figma asset extraction pattern: get_design_context → immediately curl URLs | Todd: "why can't you fetch?" + "check what I highlighted" → discovered asset URLs are ephemeral, must fetch immediately |
 
 ### Failed Experiments
 
