@@ -28,6 +28,7 @@ Log with enough context to be useful training signal.
 | Date | What Claude did | What was wrong | What would have been better |
 |------|-----------------|----------------|----------------------------|
 | 2025-01-18 | Suggested symlinks from ~/.claude → ~/Development/claude-config as solution for skill versioning | Fragile, creates confusion for sharing with teammates who'd need same structure | Keep ~/.claude as source of truth, explicitly tell Claude which files to edit when working on config |
+| 2025-01-18 | Web search for "verbose" settings returned misleading results, led us on a wild goose chase | Search results claimed verbose setting exists in settings.json and via /config — neither is true | Verify search results against actual schema/docs before trusting them. The feature request (#12544) was the real answer. |
 
 ---
 
