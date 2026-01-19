@@ -29,6 +29,7 @@ Log with enough context to be useful training signal.
 |------|-----------------|----------------|----------------------------|
 | 2025-01-18 | Suggested symlinks from ~/.claude → ~/Development/claude-config as solution for skill versioning | Fragile, creates confusion for sharing with teammates who'd need same structure | Keep ~/.claude as source of truth, explicitly tell Claude which files to edit when working on config |
 | 2025-01-18 | Web search for "verbose" settings returned misleading results, led us on a wild goose chase | Search results claimed verbose setting exists in settings.json and via /config — neither is true | Verify search results against actual schema/docs before trusting them. The feature request (#12544) was the real answer. |
+| 2025-01-19 | Spent 30+ minutes iterating on logo SVG visually instead of extracting actual Figma assets | WebFetch failed on localhost, assumed I couldn't fetch. Kept guessing at paths/structure. Misunderstood logo structure (thought circle+overlay, was crescent-as-shape). Todd had to prompt 3x: "why can't you fetch?", "check what I highlighted", "mask is inverted" | Try curl when WebFetch fails. Ask Todd to select specific elements. Ask "what IS the structure?" instead of assuming. Simpler approaches first. |
 
 ---
 
@@ -44,7 +45,7 @@ Log with enough context to be useful training signal.
 
 *As signals accumulate, note patterns:*
 
-- (none yet)
+- **Iterate instead of verify** — When something fails, I try complex workarounds instead of: (a) trying simpler alternatives, (b) asking for clarification, (c) verifying my assumptions. Seen in: web search wild goose chase (2025-01-18), Figma logo extraction (2025-01-19). Both would have been faster with one clarifying question.
 
 ---
 
