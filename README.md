@@ -136,6 +136,7 @@ Located in `~/.claude/scripts/`:
 
 ### Guides
 - [Implementation Guide](IMPLEMENTATION.md) — Step-by-step setup for all phases
+- [Stenographer Flow](docs/stenographer-flow.md) — Extract insights from sessions
 
 ### Artifacts
 - [SELF.md](artifacts/SELF.md) — Who Claude is
