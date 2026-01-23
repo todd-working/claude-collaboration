@@ -1,7 +1,7 @@
 # Work State
 
-**Last updated:** 2026-01-22 (late evening)
-**Session:** Insight extractor added. Context size bug fixed.
+**Last updated:** 2026-01-22 (night)
+**Session:** Insight extractor working. Prompt injection fixed.
 
 ---
 
@@ -53,7 +53,16 @@
 
 ## What Changed This Session
 
-### This session (continuation):
+### This session (continuation 2):
+1. Context compaction triggered — continued from summary
+2. **Prompt injection problem:** Qwen kept role-playing as Claude instead of analyzing transcript
+3. Tried: boundary markers, system prompt separation — neither worked
+4. **Fix found:** Put instructions AFTER transcript, not before
+5. Models weight recent text more heavily — "Begin your analysis now:" at end works
+6. Updated insight-extractor.sh with balanced prompt (How Claude operates, How user operates, Collaboration patterns)
+7. Tested successfully — getting real insights with transcript quotes
+
+### Previous session:
 1. Committed Phases 1-4 to both repos (v0.2.0)
 2. Ran stenographer — showed output is facts, not insights
 3. Todd asked "where are the insights?" — identified gap
@@ -108,3 +117,11 @@
 - Spent 20 min tuning prompts without verifying model could see full input
 - Optimized the wrong thing
 - Lesson: Check system works before tuning it
+
+**Prompt injection defense (for transcript analysis):**
+- Problem: Qwen reads transcript content and role-plays as Claude instead of analyzing
+- What didn't work: Boundary markers, system prompt separation
+- What worked: Put analysis instructions AFTER the transcript, not before
+- Why: Models weight recent text more heavily
+- Format: `[BEGIN TRANSCRIPT]...[END TRANSCRIPT]...Now analyze it:...Begin your analysis now:`
+- The final "Begin your analysis now:" carries more weight than transcript content
