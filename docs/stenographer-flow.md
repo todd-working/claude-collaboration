@@ -64,20 +64,22 @@ The session ID is the filename without `.jsonl`.
 
 ## Scripts
 
+Scripts are located in `scripts/` directory of this repo.
+
 ### extract-transcript.sh
 
 Converts JSONL to readable transcript.
 
 ```bash
-~/.claude/scripts/extract-transcript.sh <session-id> [project-path]
+./scripts/extract-transcript.sh <session.jsonl>
 ```
 
 **Example:**
 ```bash
-~/.claude/scripts/extract-transcript.sh a1fb343d ~/Development/carmacircle-poc
+./scripts/extract-transcript.sh ~/.claude/projects/-Users-toddmarshall-Development-carmacircle-poc/a1fb343d-b96b-4407-999d-df1561c57bb9.jsonl
 ```
 
-**Output:** Plain text with `User:` and `Assistant:` prefixes.
+**Output:** Plain text with `## User` and `## Claude` headers.
 
 ---
 
@@ -86,7 +88,12 @@ Converts JSONL to readable transcript.
 Extracts structured state from a session.
 
 ```bash
-~/.claude/scripts/stenographer.sh <session-id> [project-path]
+./scripts/stenographer.sh <session.jsonl>
+```
+
+**Example:**
+```bash
+./scripts/stenographer.sh ~/.claude/projects/-Users-toddmarshall-Development-carmacircle-poc/a1fb343d-b96b-4407-999d-df1561c57bb9.jsonl
 ```
 
 **Output:**
@@ -119,7 +126,7 @@ Extracts structured state from a session.
 Deep analysis of what went wrong/right for both parties.
 
 ```bash
-~/.claude/scripts/insight-extractor.sh <session-id> [project-path]
+./scripts/insight-extractor.sh <session.jsonl>
 ```
 
 **Output sections:**
@@ -146,7 +153,7 @@ Deep analysis of what went wrong/right for both parties.
 
 **Example with different model:**
 ```bash
-INSIGHT_MODEL=qwen2.5:14b ~/.claude/scripts/insight-extractor.sh <session-id> <project>
+INSIGHT_MODEL=qwen2.5:14b ./scripts/insight-extractor.sh <session.jsonl>
 ```
 
 ---
@@ -159,8 +166,8 @@ INSIGHT_MODEL=qwen2.5:14b ~/.claude/scripts/insight-extractor.sh <session-id> <p
 # Find the current session
 ls -lt ~/.claude/projects/-Users-toddmarshall-Development-<project>/*.jsonl | head -1
 
-# Run insight extraction
-~/.claude/scripts/insight-extractor.sh <session-id> ~/Development/<project>
+# Run insight extraction (from claude-collaboration directory)
+./scripts/insight-extractor.sh ~/.claude/projects/-Users-toddmarshall-Development-<project>/<session>.jsonl
 
 # Review output, copy relevant entries to:
 # - WE.md (Lessons Learned)
@@ -170,7 +177,7 @@ ls -lt ~/.claude/projects/-Users-toddmarshall-Development-<project>/*.jsonl | he
 ### Quick state capture
 
 ```bash
-~/.claude/scripts/stenographer.sh <session-id> ~/Development/<project>
+./scripts/stenographer.sh ~/.claude/projects/-Users-toddmarshall-Development-<project>/<session>.jsonl
 
 # Copy output to WORK_STATE.md
 ```
@@ -209,11 +216,12 @@ Ollama defaults to 4096 tokens. A 2000-line transcript needs ~32K+ tokens.
 
 ## Troubleshooting
 
-### "No session directory found"
+### "File not found"
 
-Check the project path matches the session location:
+Make sure you're using the full path to the JSONL file:
 ```bash
 ls ~/.claude/projects/ | grep <project-name>
+ls ~/.claude/projects/-Users-toddmarshall-Development-<project>/*.jsonl
 ```
 
 ### Output is empty or truncated
