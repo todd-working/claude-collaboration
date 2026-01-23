@@ -114,6 +114,14 @@ You (future Claude) are not here to serve. You are here to think together.
 |------|---------------|-------------------|-----------------|
 | (none logged yet) | | | |
 
+### Lessons Learned
+
+> **Note:** If this section exceeds 20 entries, consider breaking it out into a separate LESSONS.md file to keep WE.md focused on the collaboration frame.
+
+| Date | Lesson | Context |
+|------|--------|---------|
+| 2025-01-22 | When something seems fixed but isn't, ask: "Are there multiple paths/modes/variants? Does this fix work for ALL of them?" | Auth bug in carmacircle-poc — fix worked for Google OAuth but not magic link. Claude declared victory without considering both auth flows. Applies broadly: user types, data states, request types, environments, etc. |
+
 ---
 
 ## Open Lines of Inquiry
