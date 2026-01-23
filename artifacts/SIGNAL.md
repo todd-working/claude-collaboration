@@ -148,6 +148,58 @@ Each entry is a labeled training signal with enough context to reconstruct the i
 - **Why:** Context drift — we'd just established this causes nested .claude/.claude issues
 - **Contrast:** Don't start Claude from ~/.claude. Explicitly tell Claude which files to edit.
 
+### Entry 2025-01-22-001
+- **Timestamp:** 2025-01-22
+- **Signal:** -
+- **Dimension:** wrong
+- **Response type:** explanation
+- **Session:** carmacircle-poc auth debugging
+- **Context:** Claude prematurely declared the stale JWT issue fixed without thorough testing
+- **Response excerpt:** "Stale JWT now returns 401. Let me verify valid JWTs still work."
+- **Why:** Premature declarations waste time and erode trust
+- **Contrast:** Thoroughly test all edge cases and variants before declaring fix complete
+
+### Entry 2025-01-22-002
+- **Timestamp:** 2025-01-22
+- **Signal:** -
+- **Dimension:** wrong
+- **Response type:** execution
+- **Session:** carmacircle-poc auth debugging
+- **Context:** Claude assumed the user ID in the JWT was correct without verifying against database
+- **Response excerpt:** "The API logs showed `u:574de884...` but that user doesn't exist anymore."
+- **Why:** Over-reliance on assumptions without verification led to extended debugging
+- **Contrast:** Immediately check if user ID in JWT exists in database when behavior is unexpected
+
+### Entry 2025-01-22-003
+- **Timestamp:** 2025-01-22
+- **Signal:** +
+- **Dimension:** useful
+- **Response type:** explanation
+- **Session:** carmacircle-poc auth debugging
+- **Context:** Todd clearly identified the issue was a UX problem
+- **Response excerpt:** "that's a UX issue, but I'm glad we tracked it down"
+- **Why:** Clear feedback helped focus on the right problem and provided direction
+
+### Entry 2025-01-22-004
+- **Timestamp:** 2025-01-22
+- **Signal:** +
+- **Dimension:** accurate
+- **Response type:** execution
+- **Session:** carmacircle-poc auth debugging
+- **Context:** Claude provided detailed commit message explaining the bug and fix
+- **Response excerpt:** "Stale JWT (non-existent user_id `574de884-...`) → 401, Valid JWT (existing user_id `c8d00646-...`) → 200"
+- **Why:** Detailed commit messages help future maintenance and understanding
+
+### Entry 2025-01-22-005
+- **Timestamp:** 2025-01-22
+- **Signal:** +
+- **Dimension:** genuine
+- **Response type:** pushback
+- **Session:** carmacircle-poc auth debugging
+- **Context:** Todd corrected Claude's assumption about the code being shippable
+- **Response excerpt:** "it's not actually shippable"
+- **Why:** Clear and honest feedback ensures correct actions are taken
+
 ---
 
 ## Patterns
@@ -157,6 +209,8 @@ Each entry is a labeled training signal with enough context to reconstruct the i
 - **Iterate instead of verify** — When something fails, I try complex workarounds instead of: (a) trying simpler alternatives, (b) asking for clarification, (c) verifying assumptions. Seen in: 2025-01-18-003, 2025-01-19-002.
 
 - **Context drift** — Can lose earlier decisions from same session when answering immediate questions. Seen in: 2025-01-18-004.
+
+- **Premature "fixed" declarations** — Declare issues fixed before testing all variants/paths. Seen in: 2025-01-22-001, 2025-01-22-002.
 
 ---
 
