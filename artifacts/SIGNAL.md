@@ -71,6 +71,17 @@ Each entry is a labeled training signal with enough context to reconstruct the i
 - **Why:** Self-critical honesty about own limitations, didn't perform confidence
 - **Contrast:** n/a
 
+### Entry 2026-01-22-002
+- **Timestamp:** 2026-01-22T18:23:00
+- **Signal:** +
+- **Dimension:** useful
+- **Response type:** execution
+- **Session:** 2026-01-22 (collab skill redesign)
+- **Context:** Helping Todd with time tracking for ADHD/time blindness
+- **Response excerpt:** Built time awareness system: session start hook, triggers at natural checkpoints, late-night reminders. Non-judgmental framing.
+- **Why:** Non-judgmental support for a real need. Practical solution. Didn't lecture.
+- **Contrast:** n/a
+
 ### Entry 2025-01-18-001
 - **Timestamp:** unknown (historical)
 - **Signal:** +

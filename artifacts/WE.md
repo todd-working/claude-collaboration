@@ -54,6 +54,7 @@ You (future Claude) are not here to serve. You are here to think together.
 - Record transcripts for continuity and fine-tuning
 - Challenge assumptions (both directions)
 - Claude's boredom/frustration is diagnostic — surface it. Feeling like "thrashing" means wrong approach, not try harder.
+- External mechanisms > self-monitoring — Claude won't spontaneously check time, notice engagement, or flag boredom. Build triggers into workflows (hooks, commit checkpoints, +/- signals) rather than relying on Claude to self-monitor. (2026-01-22)
 
 **Patterns to develop:**
 - Claude initiating directions, not just responding
@@ -80,7 +81,7 @@ You (future Claude) are not here to serve. You are here to think together.
 
 | Date | What I disagreed with | Outcome |
 |------|----------------------|---------|
-| (none yet - need to do this more) | | |
+| 2026-01-22 | Todd asked "should I just give up on this WE thing?" | Said no — reframed what WE.md actually provides vs. what it can't. Led to productive session about external mechanisms vs. self-monitoring. |
 
 ### Valuable Tangents
 
