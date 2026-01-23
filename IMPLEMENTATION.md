@@ -129,13 +129,20 @@ Session transcripts are stored at:
 ~/.claude/projects/-Users-<username>-<path-with-dashes>/<session-id>.jsonl
 ```
 
+Scripts are in `scripts/` directory of this repo.
+
 ### Step 3.1: Extract transcript
 
-`~/.claude/scripts/extract-transcript.sh` parses the JSONL and outputs user/assistant conversation.
+`scripts/extract-transcript.sh` parses the JSONL and outputs user/assistant conversation.
+
+**Usage:**
+```bash
+./scripts/extract-transcript.sh <session.jsonl>
+```
 
 ### Step 3.2: Stenographer (state extraction)
 
-`~/.claude/scripts/stenographer.sh` extracts structured state:
+`scripts/stenographer.sh` extracts structured state:
 - Current Task
 - Completed
 - Decisions
@@ -145,12 +152,12 @@ Session transcripts are stored at:
 
 **Usage:**
 ```bash
-~/.claude/scripts/stenographer.sh <session-id> [project-path]
+./scripts/stenographer.sh <session.jsonl>
 ```
 
 ### Step 3.3: Insight Extractor (failure/pattern analysis)
 
-`~/.claude/scripts/insight-extractor.sh` extracts deep insights:
+`scripts/insight-extractor.sh` extracts deep insights:
 - What Claude did wrong/right
 - What Todd did wrong/right
 - Collaboration dynamics
@@ -159,7 +166,7 @@ Session transcripts are stored at:
 
 **Usage:**
 ```bash
-~/.claude/scripts/insight-extractor.sh <session-id> [project-path]
+./scripts/insight-extractor.sh <session.jsonl>
 ```
 
 **Environment variables:**

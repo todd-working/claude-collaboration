@@ -93,23 +93,27 @@ Claude has constraints: context limits, session boundaries, trained compliance. 
 
 ## Scripts
 
-Located in `~/.claude/scripts/`:
+Located in `scripts/`:
 
 | Script | Purpose |
 |--------|---------|
 | `insight-extractor.sh` | Deep analysis of session transcripts — what went wrong/right for both parties |
 | `stenographer.sh` | Extracts structured state (tasks, decisions, files modified) |
 | `extract-transcript.sh` | Converts session JSONL to readable transcript |
-| `log-useful.sh` | Quick append to WE.md Valuable Tangents |
-| `log-wrong.sh` | Quick append to SELF.md Failures |
 
 **Usage:**
 ```bash
-# Analyze a session
-~/.claude/scripts/insight-extractor.sh <session-id> <project-path>
+# Find your session file
+ls ~/.claude/projects/-Users-toddmarshall-Development-*/
 
-# Extract state
-~/.claude/scripts/stenographer.sh <session-id> <project-path>
+# Extract readable transcript
+./scripts/extract-transcript.sh <session.jsonl>
+
+# Analyze a session (requires Ollama + Qwen)
+./scripts/insight-extractor.sh <session.jsonl>
+
+# Extract structured state
+./scripts/stenographer.sh <session.jsonl>
 ```
 
 **Environment variables:**
