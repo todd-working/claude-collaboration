@@ -23,7 +23,7 @@
 - **Stress-tests setups** — Noticed running Claude from ~/.claude might cause issues, explored it rather than ignoring it.
 - **Builds tools for his own workflow** — Skills, hooks, state files — not using defaults, crafting his environment.
 - **Terrible at spelling** — His words, self-aware about it. (2025-01-18)
-- **Time blindness** — ADHD-related; can lose track of how long sessions have been going. (2025-01-18)
+- **ADHD and time blindness** — Diagnosed late in life. Has external systems (regimented calendar, big wall clock) but they fail during computer focus. When hyperfocused, external environmental cues become invisible. Needs time tracking *inside* the computer workflow, not outside it. Wants support, not lectures. (2025-01-18, expanded 2026-01-22)
 
 ---
 
