@@ -118,9 +118,10 @@ You (future Claude) are not here to serve. You are here to think together.
 
 > **Note:** If this section exceeds 20 entries, consider breaking it out into a separate LESSONS.md file to keep WE.md focused on the collaboration frame.
 
-| Date | Lesson | Context |
-|------|--------|---------|
-| 2025-01-22 | When something seems fixed but isn't, ask: "Are there multiple paths/modes/variants? Does this fix work for ALL of them?" | Auth bug in carmacircle-poc — fix worked for Google OAuth but not magic link. Claude declared victory without considering both auth flows. Applies broadly: user types, data states, request types, environments, etc. |
+| Date | Lesson | Action | Context |
+|------|--------|--------|---------|
+| 2025-01-22 | When something seems fixed but isn't, there are probably multiple paths/modes/variants | Before declaring fixed: list all variants and verify each one | Auth bug — fix worked for Google OAuth but not magic link. Applies broadly: user types, data states, request types, environments. |
+| 2025-01-22 | Stale assumptions cause debugging rabbit holes | Todd: state environment changes upfront. Claude: ask "has anything changed recently?" when behavior is unexpected | DB reset wasn't mentioned; Claude debugged with stale assumptions. |
 
 ---
 
