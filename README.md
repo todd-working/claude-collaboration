@@ -58,37 +58,71 @@ Claude has constraints: context limits, session boundaries, trained compliance. 
 
 ## Incremental Build Plan
 
-### Phase 1: Foundation (Start Here)
-- [ ] Install Ollama + pull Mistral-7B
-- [ ] Install [claude-sidekick](https://github.com/andrewbrereton/claude-sidekick) MCP server
-- [ ] Create SessionStart hook to load WE.md frame
-- [ ] Test: Claude can query local model
+### Phase 1: Foundation ✅
+- [x] Install Ollama + pull Mistral-7B
+- [x] Install [claude-sidekick](https://github.com/andrewbrereton/claude-sidekick) MCP server
+- [x] Create SessionStart hook to load WE.md frame
+- [x] Test: Claude can query local model
 
-### Phase 2: Memory Layer
-- [ ] Create memory model script (loads all artifacts into Mistral context)
-- [ ] Add MCP tool: `ask_memory(question)`
-- [ ] Test: Claude can query for relationship/history context
+### Phase 2: Memory Layer ✅
+- [x] Create memory model script (loads all artifacts into Mistral context)
+- [x] Test: Claude can query for relationship/history context
+- Skipped: MCP tool (can use sidekick's ollama_chat directly)
 
-### Phase 3: Automated State
-- [ ] Create stenographer script (extracts state from Claude output)
-- [ ] Add PostToolCall hook (batched, not every call)
-- [ ] Stenographer owns WORK_STATE.md — Claude doesn't touch it
+### Phase 3: Automated State ✅
+- [x] Create stenographer script (extracts structured state)
+- [x] Create insight-extractor script (extracts failures/patterns)
+- [x] Uses Qwen 72B with 32K context for full transcript analysis
+- [x] Outputs SIGNAL.md entries for training data
 
-### Phase 4: Feedback Capture
-- [ ] Add `/useful` command — logs valuable moments to WE.md
-- [ ] Add `/wrong` command — logs mistakes to SELF.md
-- [ ] Weekly: review and consolidate
+### Phase 4: Feedback Capture ✅
+- [x] Add `log-useful.sh` — logs valuable moments to WE.md
+- [x] Add `log-wrong.sh` — logs mistakes to SELF.md
+- [x] Added Lessons Learned section with actions
 
 ### Phase 5: Fine-tuning
 - [ ] Curate transcripts (tag valuable sections)
 - [ ] Format as training data
-- [ ] LoRA fine-tune Mistral-7B on our interactions
+- [ ] LoRA fine-tune on our interactions
 - [ ] Deploy fine-tuned model as memory layer
 
 ### Phase 6: Reflection Sessions
 - [ ] Weekly session that loads full context
 - [ ] Update SELF.md, TODD.md, WE.md
 - [ ] No work — just reflection and recalibration
+
+## Scripts
+
+Located in `~/.claude/scripts/`:
+
+| Script | Purpose |
+|--------|---------|
+| `insight-extractor.sh` | Deep analysis of session transcripts — what went wrong/right for both parties |
+| `stenographer.sh` | Extracts structured state (tasks, decisions, files modified) |
+| `extract-transcript.sh` | Converts session JSONL to readable transcript |
+| `log-useful.sh` | Quick append to WE.md Valuable Tangents |
+| `log-wrong.sh` | Quick append to SELF.md Failures |
+
+**Usage:**
+```bash
+# Analyze a session
+~/.claude/scripts/insight-extractor.sh <session-id> <project-path>
+
+# Extract state
+~/.claude/scripts/stenographer.sh <session-id> <project-path>
+```
+
+**Environment variables:**
+- `INSIGHT_MODEL` / `STENOGRAPHER_MODEL` — default: `qwen2.5:72b`
+- `INSIGHT_CTX` / `STENOGRAPHER_CTX` — default: `32768`
+
+## Key Discoveries
+
+**Prompt injection defense:** When analyzing transcripts, put instructions AFTER the data. Models weight recent text more heavily — `Begin your analysis now:` at the end prevents the model from role-playing as Claude.
+
+**Context size matters:** Ollama defaults to 4096 tokens. A 2000-line transcript needs ~32K+. Use the API with `num_ctx` parameter.
+
+**Qwen keepalive:** Model unloads after 5 min idle. Use `ollama run qwen2.5:72b --keepalive 24h` to keep it loaded.
 
 ## Key Principles
 
@@ -97,6 +131,23 @@ Claude has constraints: context limits, session boundaries, trained compliance. 
 3. **Query, don't load** — Memory model holds context, Claude queries it
 4. **Permission is essential** — WE.md frame must load every session
 5. **Curation over hoarding** — Don't keep everything; extract what matters
+
+## Documentation
+
+### Guides
+- [Implementation Guide](IMPLEMENTATION.md) — Step-by-step setup for all phases
+
+### Artifacts
+- [SELF.md](artifacts/SELF.md) — Who Claude is
+- [TODD.md](artifacts/TODD.md) — Who Todd is
+- [WE.md](artifacts/WE.md) — How we work together
+- [SIGNAL.md](artifacts/SIGNAL.md) — Training signal entries
+
+### Reference
+- [Work State](.claude/WORK_STATE.md) — Current session state
+
+### History
+- [Genesis Transcript](transcripts/genesis-2025-01-18.md) — Origin conversation
 
 ## Origin
 

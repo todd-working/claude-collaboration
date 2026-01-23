@@ -18,8 +18,13 @@ ollama serve  # run in background
 ### Step 1.2: Pull models
 
 ```bash
-ollama pull mistral:7b-instruct  # fast, for memory/stenographer
-ollama pull qwen2.5-coder:32b    # code review (optional for now)
+ollama pull mistral:7b-instruct  # fast, for memory queries
+ollama pull qwen2.5:72b          # transcript analysis (47GB, needs 128GB RAM)
+```
+
+Keep Qwen loaded to avoid cold starts:
+```bash
+ollama run qwen2.5:72b --keepalive 24h
 ```
 
 ### Step 1.3: Install claude-sidekick
@@ -117,39 +122,53 @@ Extend sidekick or create custom MCP server with `ask_memory` tool that wraps th
 
 ---
 
-## Phase 3: Automated State (Stenographer)
+## Phase 3: Automated State (Stenographer + Insight Extractor)
 
-### Step 3.1: Create stenographer script
-
-`~/.claude/scripts/stenographer.sh`:
-```bash
-#!/bin/bash
-# Extracts state from recent Claude output, updates WORK_STATE.md
-
-# Get recent output (implementation depends on how transcripts are captured)
-RECENT_OUTPUT="$1"
-
-# Ask local model to extract state
-STATE=$(ollama run mistral:7b-instruct <<EOF
-Extract key state from this conversation excerpt. Return only:
-- Current task
-- Decisions made
-- Open questions
-- Files touched
-
-Keep it brief. Output in markdown format.
-
-$RECENT_OUTPUT
-EOF
-)
-
-# Update WORK_STATE.md (append or replace based on your preference)
-echo "$STATE" >> ~/.claude/WORK_STATE.md
+Session transcripts are stored at:
+```
+~/.claude/projects/-Users-<username>-<path-with-dashes>/<session-id>.jsonl
 ```
 
-### Step 3.2: Hook integration (later)
+### Step 3.1: Extract transcript
 
-Add to PostToolCall hook once transcript capture is working. Batch — don't run on every tool call.
+`~/.claude/scripts/extract-transcript.sh` parses the JSONL and outputs user/assistant conversation.
+
+### Step 3.2: Stenographer (state extraction)
+
+`~/.claude/scripts/stenographer.sh` extracts structured state:
+- Current Task
+- Completed
+- Decisions
+- Open Questions
+- Files Modified
+- Next Actions
+
+**Usage:**
+```bash
+~/.claude/scripts/stenographer.sh <session-id> [project-path]
+```
+
+### Step 3.3: Insight Extractor (failure/pattern analysis)
+
+`~/.claude/scripts/insight-extractor.sh` extracts deep insights:
+- What Claude did wrong/right
+- What Todd did wrong/right
+- Collaboration dynamics
+- Session-specific learnings
+- SIGNAL.md entries (structured training data)
+
+**Usage:**
+```bash
+~/.claude/scripts/insight-extractor.sh <session-id> [project-path]
+```
+
+**Environment variables:**
+- `INSIGHT_MODEL` / `STENOGRAPHER_MODEL` — default: `qwen2.5:72b`
+- `INSIGHT_CTX` / `STENOGRAPHER_CTX` — default: `32768`
+
+### Key Implementation Detail
+
+**Instructions must come AFTER the transcript.** Models weight recent text more heavily. Putting analysis instructions before the transcript causes the model to role-play as Claude instead of analyzing.
 
 ---
 
@@ -189,12 +208,15 @@ Not needed for initial value. Build phases 1-4 first.
 ## Quick Start Checklist
 
 ```
-[ ] Ollama installed and running
-[ ] Mistral-7B pulled
-[ ] claude-sidekick installed
-[ ] SessionStart hook loading WE.md
-[ ] Memory script working
-[ ] Can query memory from Claude session
+[x] Ollama installed and running
+[x] Mistral-7B pulled (for memory queries)
+[x] Qwen 72B pulled (for transcript analysis)
+[x] claude-sidekick installed
+[x] SessionStart hook loading WE.md
+[x] Memory script working
+[x] Stenographer script working
+[x] Insight extractor script working
+[x] Log scripts (log-useful.sh, log-wrong.sh) working
 ```
 
-Once checked: you have the foundation. Build incrementally from there.
+**Current state:** Phases 1-4 complete. Ready for Phase 5 (fine-tuning prep).
