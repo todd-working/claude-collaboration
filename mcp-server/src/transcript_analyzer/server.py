@@ -27,6 +27,11 @@ job_manager: JobManager | None = None
 ollama_client: OllamaClient | None = None
 prompts: dict = {}
 
+# Runtime-configurable settings (persist for session, no restart needed)
+runtime_config: dict = {
+    "model": None,  # None = use env default
+}
+
 
 def load_prompts(prompts_dir: Path) -> dict:
     """Load prompt templates from YAML files."""
@@ -51,6 +56,15 @@ def get_config() -> dict:
         ),
         "job_retention_days": int(os.environ.get("JOB_RETENTION_DAYS", "30")),
     }
+
+
+def get_effective_model(config: dict, request_model: str | None = None) -> str:
+    """Get the model to use, with priority: request > runtime > env default."""
+    if request_model:
+        return request_model
+    if runtime_config["model"]:
+        return runtime_config["model"]
+    return config["default_model"]
 
 
 # Create server instance
@@ -194,6 +208,28 @@ async def list_tools() -> list[Tool]:
                 "properties": {},
             },
         ),
+        Tool(
+            name="set_model",
+            description="Set the default model for analysis (persists until server restart)",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "type": "string",
+                        "description": "Model name (e.g., 'qwen2.5:14b', 'mistral:7b'). Use 'default' to reset to env default.",
+                    },
+                },
+                "required": ["model"],
+            },
+        ),
+        Tool(
+            name="get_config",
+            description="Get current configuration (model, timeout, paths)",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+            },
+        ),
     ]
 
 
@@ -268,12 +304,14 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             system_prompt = prompt_config.get("system", "")
             prompt_template = prompt_config.get("prompt", "{transcript}")
 
+            model = get_effective_model(config, arguments.get("model"))
+
             if arguments.get("blocking", False):
                 # Blocking mode - wait for result
                 transcript = extract_transcript(session_file)
                 prompt = prompt_template.format(transcript=transcript)
                 response = await ollama_client.generate(
-                    model=arguments.get("model", config["default_model"]),
+                    model=model,
                     prompt=prompt,
                     system=system_prompt,
                     context_size=config["default_context_size"],
@@ -286,7 +324,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                     session_file=session_file,
                     system_prompt=system_prompt,
                     analysis_prompt_template=prompt_template,
-                    model=arguments.get("model"),
+                    model=model,
                 )
                 return [TextContent(
                     type="text",
@@ -302,12 +340,14 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             system_prompt = prompt_config.get("system", "")
             prompt_template = prompt_config.get("prompt", "{transcript}")
 
+            model = get_effective_model(config, arguments.get("model"))
+
             if arguments.get("blocking", False):
                 # Blocking mode - wait for result
                 transcript = extract_transcript(session_file)
                 prompt = prompt_template.format(transcript=transcript)
                 response = await ollama_client.generate(
-                    model=arguments.get("model", config["default_model"]),
+                    model=model,
                     prompt=prompt,
                     system=system_prompt,
                     context_size=config["default_context_size"],
@@ -320,7 +360,7 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                     session_file=session_file,
                     system_prompt=system_prompt,
                     analysis_prompt_template=prompt_template,
-                    model=arguments.get("model"),
+                    model=model,
                 )
                 return [TextContent(
                     type="text",
@@ -383,10 +423,34 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             if not models:
                 return [TextContent(type="text", text="No models found (is Ollama running?)")]
 
+            current_model = get_effective_model(config)
             result = []
             for model in models:
                 size_gb = model.size / (1024 ** 3)
-                result.append(f"- {model.name} ({size_gb:.1f} GB)")
+                marker = " ← current" if model.name == current_model else ""
+                result.append(f"- {model.name} ({size_gb:.1f} GB){marker}")
+            return [TextContent(type="text", text="\n".join(result))]
+
+        elif name == "set_model":
+            model = arguments["model"]
+            if model.lower() == "default":
+                runtime_config["model"] = None
+                return [TextContent(type="text", text=f"Model reset to env default: {config['default_model']}")]
+            else:
+                runtime_config["model"] = model
+                return [TextContent(type="text", text=f"Model set to: {model}")]
+
+        elif name == "get_config":
+            effective_model = get_effective_model(config)
+            result = [
+                "**Current Configuration**",
+                f"- Model: {effective_model}" + (" (runtime override)" if runtime_config["model"] else " (env default)"),
+                f"- Context size: {config['default_context_size']:,}",
+                f"- Ollama URL: {config['ollama_url']}",
+                f"- Timeout: {config['ollama_timeout']}s",
+                f"- Sessions dir: {config['sessions_dir']}",
+                f"- Job retention: {config['job_retention_days']} days",
+            ]
             return [TextContent(type="text", text="\n".join(result))]
 
         else:
