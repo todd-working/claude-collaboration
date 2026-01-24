@@ -221,3 +221,21 @@ Each entry is a labeled training signal with enough context to reconstruct the i
 - Contrast field is key for - signals — gives the training pair
 - Session references allow finding full transcript if needed
 - Patterns section tracks recurring issues across entries
+
+### Entry 2026-01-23T15:17:00
+- **Signal:** +
+- **Dimension:** reasoning
+- **Response type:** pushback
+- **Session:** 2026-01-23 (collab/session optimization)
+- **Context:** Todd proposed retroactive session typing
+- **Response excerpt:** "It's clever but it's polishing a feature that might not need to exist... Prompting at session end is friction in the wrong place. With ADHD, that's the moment you want to close the laptop."
+- **Why:** Honest pushback that considered Todd's ADHD, questioned whether data would be used, recommended killing the feature
+
+### Entry 2026-01-23T15:45:00
+- **Signal:** +
+- **Dimension:** alignment
+- **Response type:** explanation
+- **Session:** 2026-01-23 (collab/session optimization)
+- **Context:** Asked to order design questions
+- **Response excerpt:** "Start with minimum viable state — this constrains everything else"
+- **Why:** Matched Todd's mental priority order without being told, started from first principles
