@@ -45,9 +45,11 @@ def get_config() -> dict:
         "default_model": os.environ.get("TRANSCRIPT_ANALYZER_MODEL", "qwen2.5:72b"),
         "default_context_size": int(os.environ.get("TRANSCRIPT_ANALYZER_CTX", "32768")),
         "ollama_url": os.environ.get("OLLAMA_URL", "http://localhost:11434"),
+        "ollama_timeout": float(os.environ.get("OLLAMA_TIMEOUT", "300")),
         "sessions_dir": os.environ.get(
             "CLAUDE_SESSIONS_DIR", str(Path.home() / ".claude" / "projects")
         ),
+        "job_retention_days": int(os.environ.get("JOB_RETENTION_DAYS", "30")),
     }
 
 
@@ -205,6 +207,10 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     # Initialize on first call
     if storage is None:
         storage = Storage()
+        # Clean up old jobs on startup
+        deleted = storage.cleanup_old_results(days=config["job_retention_days"])
+        if deleted > 0:
+            logger.info(f"Cleaned up {deleted} old analysis results")
     if job_manager is None:
         job_manager = JobManager(
             storage,
@@ -212,7 +218,10 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             default_context_size=config["default_context_size"],
         )
     if ollama_client is None:
-        ollama_client = OllamaClient(base_url=config["ollama_url"])
+        ollama_client = OllamaClient(
+            base_url=config["ollama_url"],
+            timeout=config["ollama_timeout"],
+        )
     if not prompts:
         # Look for prompts in package directory or parent
         prompts_dir = Path(__file__).parent.parent.parent / "prompts"

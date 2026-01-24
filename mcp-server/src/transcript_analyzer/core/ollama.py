@@ -1,7 +1,17 @@
-"""Async Ollama API client."""
+"""Async Ollama API client with retry logic."""
+
+import logging
+import time
+from dataclasses import dataclass
 
 import httpx
-from dataclasses import dataclass
+
+logger = logging.getLogger(__name__)
+
+# Retry configuration
+DEFAULT_MAX_RETRIES = 3
+DEFAULT_RETRY_DELAY = 2.0  # seconds
+RETRYABLE_STATUS_CODES = {502, 503, 504}  # Gateway errors
 
 
 @dataclass
@@ -26,6 +36,12 @@ class GenerateResponse:
 
 class OllamaError(Exception):
     """Error from Ollama API."""
+
+    pass
+
+
+class OllamaTimeoutError(OllamaError):
+    """Timeout waiting for Ollama response."""
 
     pass
 
@@ -70,21 +86,24 @@ class OllamaClient:
         prompt: str,
         system: str | None = None,
         context_size: int = 32768,
+        max_retries: int = DEFAULT_MAX_RETRIES,
     ) -> GenerateResponse:
         """
-        Generate text using Ollama.
+        Generate text using Ollama with retry logic.
 
         Args:
             model: Model name (e.g., "qwen2.5:72b")
             prompt: The prompt text
             system: Optional system prompt
             context_size: Context window size (num_ctx)
+            max_retries: Maximum retry attempts for transient failures
 
         Returns:
             GenerateResponse with the generated text
 
         Raises:
-            OllamaError: If the API call fails
+            OllamaError: If the API call fails after all retries
+            OllamaTimeoutError: If the request times out
         """
         client = await self._get_client()
 
@@ -98,22 +117,44 @@ class OllamaClient:
         if system:
             payload["system"] = system
 
-        try:
-            response = await client.post("/api/generate", json=payload)
-            response.raise_for_status()
-            data = response.json()
+        last_error: Exception | None = None
+        for attempt in range(max_retries + 1):
+            try:
+                response = await client.post("/api/generate", json=payload)
+                response.raise_for_status()
+                data = response.json()
 
-            return GenerateResponse(
-                response=data["response"],
-                model=data.get("model", model),
-                total_duration=data.get("total_duration"),
-                prompt_eval_count=data.get("prompt_eval_count"),
-                eval_count=data.get("eval_count"),
-            )
-        except httpx.HTTPStatusError as e:
-            raise OllamaError(f"Ollama API error: {e.response.status_code} - {e.response.text}")
-        except httpx.RequestError as e:
-            raise OllamaError(f"Failed to connect to Ollama: {e}")
+                return GenerateResponse(
+                    response=data["response"],
+                    model=data.get("model", model),
+                    total_duration=data.get("total_duration"),
+                    prompt_eval_count=data.get("prompt_eval_count"),
+                    eval_count=data.get("eval_count"),
+                )
+            except httpx.TimeoutException as e:
+                last_error = OllamaTimeoutError(f"Ollama request timed out after {self.timeout}s")
+                logger.warning(f"Ollama timeout (attempt {attempt + 1}/{max_retries + 1}): {e}")
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code in RETRYABLE_STATUS_CODES:
+                    last_error = OllamaError(f"Ollama API error: {e.response.status_code}")
+                    logger.warning(f"Ollama retryable error (attempt {attempt + 1}/{max_retries + 1}): {e.response.status_code}")
+                else:
+                    # Non-retryable error, fail immediately
+                    raise OllamaError(f"Ollama API error: {e.response.status_code} - {e.response.text}")
+            except httpx.RequestError as e:
+                last_error = OllamaError(f"Failed to connect to Ollama: {e}")
+                logger.warning(f"Ollama connection error (attempt {attempt + 1}/{max_retries + 1}): {e}")
+
+            # Wait before retry (except on last attempt)
+            if attempt < max_retries:
+                await self._async_sleep(DEFAULT_RETRY_DELAY * (attempt + 1))
+
+        raise last_error or OllamaError("Unknown error")
+
+    async def _async_sleep(self, seconds: float) -> None:
+        """Async sleep for retry delays."""
+        import asyncio
+        await asyncio.sleep(seconds)
 
     async def list_models(self) -> list[OllamaModel]:
         """
@@ -160,6 +201,7 @@ def generate_sync(
     context_size: int = 32768,
     base_url: str = "http://localhost:11434",
     timeout: float = 300.0,
+    max_retries: int = DEFAULT_MAX_RETRIES,
 ) -> GenerateResponse:
     """
     Synchronous version of generate for use in background threads.
@@ -171,9 +213,14 @@ def generate_sync(
         context_size: Context window size
         base_url: Ollama API base URL
         timeout: Request timeout in seconds
+        max_retries: Maximum retry attempts for transient failures
 
     Returns:
         GenerateResponse with the generated text
+
+    Raises:
+        OllamaError: If the API call fails after all retries
+        OllamaTimeoutError: If the request times out
     """
     payload = {
         "model": model,
@@ -185,20 +232,37 @@ def generate_sync(
     if system:
         payload["system"] = system
 
-    try:
-        with httpx.Client(base_url=base_url, timeout=timeout) as client:
-            response = client.post("/api/generate", json=payload)
-            response.raise_for_status()
-            data = response.json()
+    last_error: Exception | None = None
+    for attempt in range(max_retries + 1):
+        try:
+            with httpx.Client(base_url=base_url, timeout=timeout) as client:
+                response = client.post("/api/generate", json=payload)
+                response.raise_for_status()
+                data = response.json()
 
-            return GenerateResponse(
-                response=data["response"],
-                model=data.get("model", model),
-                total_duration=data.get("total_duration"),
-                prompt_eval_count=data.get("prompt_eval_count"),
-                eval_count=data.get("eval_count"),
-            )
-    except httpx.HTTPStatusError as e:
-        raise OllamaError(f"Ollama API error: {e.response.status_code} - {e.response.text}")
-    except httpx.RequestError as e:
-        raise OllamaError(f"Failed to connect to Ollama: {e}")
+                return GenerateResponse(
+                    response=data["response"],
+                    model=data.get("model", model),
+                    total_duration=data.get("total_duration"),
+                    prompt_eval_count=data.get("prompt_eval_count"),
+                    eval_count=data.get("eval_count"),
+                )
+        except httpx.TimeoutException as e:
+            last_error = OllamaTimeoutError(f"Ollama request timed out after {timeout}s")
+            logger.warning(f"Ollama timeout (attempt {attempt + 1}/{max_retries + 1}): {e}")
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code in RETRYABLE_STATUS_CODES:
+                last_error = OllamaError(f"Ollama API error: {e.response.status_code}")
+                logger.warning(f"Ollama retryable error (attempt {attempt + 1}/{max_retries + 1}): {e.response.status_code}")
+            else:
+                # Non-retryable error, fail immediately
+                raise OllamaError(f"Ollama API error: {e.response.status_code} - {e.response.text}")
+        except httpx.RequestError as e:
+            last_error = OllamaError(f"Failed to connect to Ollama: {e}")
+            logger.warning(f"Ollama connection error (attempt {attempt + 1}/{max_retries + 1}): {e}")
+
+        # Wait before retry (except on last attempt)
+        if attempt < max_retries:
+            time.sleep(DEFAULT_RETRY_DELAY * (attempt + 1))
+
+    raise last_error or OllamaError("Unknown error")
