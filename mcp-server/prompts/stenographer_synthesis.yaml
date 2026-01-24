@@ -1,0 +1,42 @@
+name: stenographer_synthesis
+description: Synthesize multiple chunk analyses into final stenographer output
+
+system: |
+  You are synthesizing multiple chunk analyses into a single coherent session summary. Merge overlapping information, resolve conflicts, and create a unified view of the session.
+
+prompt: |
+  [BEGIN CHUNK ANALYSIS RESULTS]
+
+  {chunk_results}
+
+  [END CHUNK ANALYSIS RESULTS]
+
+  The above contains {total_chunks} chunk analyses from a single Claude Code session. Synthesize them into a unified summary.
+
+  Rules:
+  - Merge duplicate entries (same file modified, same decision mentioned)
+  - Resolve conflicts by trusting later chunks (they have more context)
+  - Track items that span chunks to their conclusion
+  - Remove "(continuing)" and "(resolved)" markers - show final state only
+
+  Output in this exact format:
+
+  **Current Task:**
+  [What is being worked on at the END of the session]
+
+  **Completed:**
+  [Everything that was finished during the full session]
+
+  **Decisions:**
+  [All key choices made, deduplicated]
+
+  **Open Questions:**
+  [Questions that remain unresolved by session end]
+
+  **Files Modified:**
+  [Complete, deduplicated list of files changed]
+
+  **Next Actions:**
+  [What should happen next based on full session context]
+
+  Be concise. Skip empty sections. Begin synthesis now:

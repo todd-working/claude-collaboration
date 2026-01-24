@@ -9,6 +9,7 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import TextContent, Tool
 
+from .core.chunker import DEFAULT_CHUNK_TOKENS, DEFAULT_OVERLAP_TURNS
 from .core.job_manager import JobManager
 from .core.ollama import OllamaClient
 from .core.parser import extract_transcript, find_sessions, get_session_metadata
@@ -55,6 +56,9 @@ def get_config() -> dict:
             "CLAUDE_SESSIONS_DIR", str(Path.home() / ".claude" / "projects")
         ),
         "job_retention_days": int(os.environ.get("JOB_RETENTION_DAYS", "30")),
+        # Chunking configuration
+        "chunk_tokens": int(os.environ.get("TRANSCRIPT_ANALYZER_CHUNK_SIZE", str(DEFAULT_CHUNK_TOKENS))),
+        "overlap_turns": int(os.environ.get("TRANSCRIPT_ANALYZER_OVERLAP_TURNS", str(DEFAULT_OVERLAP_TURNS))),
     }
 
 
@@ -252,6 +256,8 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             storage,
             default_model=config["default_model"],
             default_context_size=config["default_context_size"],
+            chunk_tokens=config["chunk_tokens"],
+            overlap_turns=config["overlap_turns"],
         )
     if ollama_client is None:
         ollama_client = OllamaClient(
@@ -300,9 +306,19 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             if not session_file.exists():
                 return [TextContent(type="text", text=f"Error: File not found: {session_file}")]
 
+            # Load prompts for single-pass and chunked analysis
             prompt_config = prompts.get("stenographer", {})
             system_prompt = prompt_config.get("system", "")
             prompt_template = prompt_config.get("prompt", "{transcript}")
+
+            # Load chunk prompts (may not exist)
+            chunk_config = prompts.get("stenographer_chunk", {})
+            chunk_system_prompt = chunk_config.get("system")
+            chunk_prompt_template = chunk_config.get("prompt")
+
+            synthesis_config = prompts.get("stenographer_synthesis", {})
+            synthesis_system_prompt = synthesis_config.get("system")
+            synthesis_prompt_template = synthesis_config.get("prompt")
 
             model = get_effective_model(config, arguments.get("model"))
 
@@ -325,6 +341,10 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                     system_prompt=system_prompt,
                     analysis_prompt_template=prompt_template,
                     model=model,
+                    chunk_system_prompt=chunk_system_prompt,
+                    chunk_prompt_template=chunk_prompt_template,
+                    synthesis_system_prompt=synthesis_system_prompt,
+                    synthesis_prompt_template=synthesis_prompt_template,
                 )
                 return [TextContent(
                     type="text",
@@ -336,9 +356,19 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             if not session_file.exists():
                 return [TextContent(type="text", text=f"Error: File not found: {session_file}")]
 
+            # Load prompts for single-pass and chunked analysis
             prompt_config = prompts.get("insight_extractor", {})
             system_prompt = prompt_config.get("system", "")
             prompt_template = prompt_config.get("prompt", "{transcript}")
+
+            # Load chunk prompts (may not exist)
+            chunk_config = prompts.get("insight_chunk", {})
+            chunk_system_prompt = chunk_config.get("system")
+            chunk_prompt_template = chunk_config.get("prompt")
+
+            synthesis_config = prompts.get("insight_synthesis", {})
+            synthesis_system_prompt = synthesis_config.get("system")
+            synthesis_prompt_template = synthesis_config.get("prompt")
 
             model = get_effective_model(config, arguments.get("model"))
 
@@ -361,6 +391,10 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                     system_prompt=system_prompt,
                     analysis_prompt_template=prompt_template,
                     model=model,
+                    chunk_system_prompt=chunk_system_prompt,
+                    chunk_prompt_template=chunk_prompt_template,
+                    synthesis_system_prompt=synthesis_system_prompt,
+                    synthesis_prompt_template=synthesis_prompt_template,
                 )
                 return [TextContent(
                     type="text",
@@ -450,6 +484,10 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                 f"- Timeout: {config['ollama_timeout']}s",
                 f"- Sessions dir: {config['sessions_dir']}",
                 f"- Job retention: {config['job_retention_days']} days",
+                "",
+                "**Chunking Configuration**",
+                f"- Chunk size: {config['chunk_tokens']:,} tokens (~{config['chunk_tokens'] * 4:,} chars)",
+                f"- Overlap turns: {config['overlap_turns']}",
             ]
             return [TextContent(type="text", text="\n".join(result))]
 

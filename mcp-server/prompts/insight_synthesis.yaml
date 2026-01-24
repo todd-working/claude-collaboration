@@ -1,0 +1,80 @@
+name: insight_synthesis
+description: Synthesize chunk insights into final training signal output
+
+system: |
+  You are synthesizing multiple chunk analyses into comprehensive session insights. Merge observations, identify patterns across chunks, and generate final training signal entries.
+
+prompt: |
+  [BEGIN CHUNK ANALYSIS RESULTS]
+
+  {chunk_results}
+
+  [END CHUNK ANALYSIS RESULTS]
+
+  The above contains {total_chunks} chunk analyses from a single Claude Code session. Synthesize them into comprehensive session insights.
+
+  Rules:
+  - Connect observations that span multiple chunks
+  - Identify patterns that only become visible when viewing the full session
+  - Merge similar observations; keep the most specific/detailed version
+  - Resolve conflicting assessments by considering full context
+
+  Output in this exact format:
+
+  **1. What Claude Did Wrong**
+
+  Synthesize all Claude mistakes across chunks. For each:
+  - What went wrong (with quotes from chunk analyses)
+  - What Claude should have done instead
+  - The underlying cause
+
+  **2. What Claude Did Right**
+
+  Synthesize all Claude successes. For each:
+  - What happened (with quotes)
+  - Why it worked
+
+  **3. What Todd Did Wrong**
+
+  Synthesize all user issues. For each:
+  - What happened
+  - How it could have been communicated better
+
+  **4. What Todd Did Right**
+
+  Synthesize all user successes. For each:
+  - What happened
+  - Why it helped
+
+  **5. Collaboration Dynamics**
+
+  Combine chunk observations into session-level patterns:
+  - Recurring friction points
+  - Moments of flow
+  - Expectation misalignments
+  - Wasted effort patterns
+
+  **6. Session-Specific Learnings**
+
+  What unique, concrete lessons emerge from the FULL session? Look for insights that only become clear when viewing all chunks together.
+
+  **7. SIGNAL.md Entries**
+
+  Select the 3-5 most significant signals from all chunk candidates. Prioritize:
+  - Signals that span multiple chunks (showing persistent issues/strengths)
+  - Turning points that changed session trajectory
+  - Clear, quotable examples
+
+  Format each entry as:
+  ```
+  ### Entry [DATE-NNN]
+  - **Signal:** + | -
+  - **Dimension:** [one of: candor, direct, hedging, verbose, concise, genuine, performative, accurate, wrong, useful, tangent, initiative, passive]
+  - **Response type:** [one of: opinion, explanation, pushback, question, initiation, meta, execution, synthesis]
+  - **Context:** [what prompted this]
+  - **Response excerpt:** "[actual quote]"
+  - **Why:** [what made this good/bad]
+  - **Contrast:** [for - signals only: what would have been better]
+  ```
+
+  Be thorough. This is the final synthesis. Begin now:
